@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: zfz-scplan
+    runtime: python
+    buildCommand: ""
+    startCommand: python3 server.py
+    plan: free

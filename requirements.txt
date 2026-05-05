@@ -1,0 +1,2 @@
+# 科研计划板 — Render.com deployment
+# No extra dependencies needed (pure Python stdlib)

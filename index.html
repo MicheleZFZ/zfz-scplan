@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>科研计划板</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;padding:2rem}
+  .container{max-width:720px;margin:0 auto}
+  h1{font-size:1.6rem;color:#58a6ff;margin-bottom:0.3rem}
+  .subtitle{color:#8b949e;font-size:0.9rem;margin-bottom:2rem}
+  .card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:1.5rem;margin-bottom:1.5rem}
+  .card h2{font-size:1.1rem;margin-bottom:1rem;color:#f0f6fc}
+  .date-input{background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;padding:.5rem .8rem;font-size:.95rem;width:100%}
+  .date-input:focus{outline:none;border-color:#58a6ff}
+  .items{list-style:none;margin-bottom:1rem}
+  .item{display:flex;align-items:flex-start;gap:.6rem;padding:.6rem 0;border-bottom:1px solid #21262d}
+  .item:last-child{border-bottom:none}
+  .item input[type=checkbox]{margin-top:.25rem;accent-color:#58a6ff;flex-shrink:0;width:16px;height:16px;cursor:pointer}
+  .item .text{flex:1;background:transparent;border:none;color:#e6edf3;font-size:.95rem;padding:.2rem 0;font-family:inherit}
+  .item .text:focus{outline:none;border-bottom:1px solid #58a6ff}
+  .item .text.done{text-decoration:line-through;color:#484f58}
+  .add-btn{background:#21262d;border:1px dashed #30363d;border-radius:6px;color:#8b949e;padding:.6rem;width:100%;cursor:pointer;font-size:.9rem}
+  .add-btn:hover{border-color:#58a6ff;color:#58a6ff}
+  .actions{display:flex;gap:.8rem;margin:1.5rem 0}
+  .btn{flex:1;padding:.7rem 1.2rem;border:none;border-radius:6px;font-size:.95rem;cursor:pointer}
+  .btn-primary{background:#238636;color:#fff}
+  .btn-primary:hover{background:#2ea043}
+  .btn-secondary{background:#21262d;color:#e6edf3;border:1px solid #30363d}
+  .btn-secondary:hover{background:#30363d}
+  .note{width:100%;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;padding:.8rem;font-size:.9rem;resize:vertical;min-height:80px;font-family:inherit;margin-top:1rem}
+  .note:focus{outline:none;border-color:#58a6ff}
+  .history{margin-top:2rem}
+  .history-item{background:#161b22;border:1px solid #30363d;border-radius:6px;padding:.8rem 1rem;margin-bottom:.5rem}
+  .history-date{color:#8b949e;font-size:.8rem}
+  .history-items{color:#e6edf3;font-size:.9rem;margin-top:.3rem}
+  .status{margin-top:.8rem;padding:.5rem;border-radius:6px;display:none;font-size:.9rem}
+  .status.success{display:block;background:#0d2818;color:#3fb950;border:1px solid #238636}
+  .status.error{display:block;background:#290b0b;color:#f85149;border:1px solid #da3633}
+  .delete-btn{background:none;border:none;color:#f85149;cursor:pointer;font-size:1rem;padding:0 .2rem;flex-shrink:0}
+  .delete-btn:hover{color:#ff6b63}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📋 科研计划板</h1>
+  <p class="subtitle">写下明天的计划，文献日报会自动播报</p>
+  <div class="card">
+    <h2>📅 明日计划</h2>
+    <input type="date" id="planDate" class="date-input">
+    <ul class="items" id="items"></ul>
+    <button class="add-btn" onclick="addItem()">+ 添加任务</button>
+    <textarea class="note" id="note" placeholder="备注 / 额外说明..."></textarea>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="savePlan()">💾 保存计划</button>
+      <button class="btn btn-secondary" onclick="clearPlan()">🗑️ 清空</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+  <div class="card history" id="historySection">
+    <h2>📜 历史计划</h2>
+    <div id="history"></div>
+  </div>
+</div>
+<script>
+let state={items:[],note:"",date:""};const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);const defaultDate=tomorrow.toISOString().split('T')[0];
+function render(){const list=document.getElementById('items');list.innerHTML=state.items.map((item,i)=>'<li class="item"><input type="checkbox" '+(item.done?'checked':'')+' onchange="toggleDone('+i+')"><input class="text '+(item.done?'done':'')+'" value="'+escapeHtml(item.text)+'" oninput="updateText('+i+',this.value)" placeholder="写一条任务..."><button class="delete-btn" onclick="removeItem('+i+')">✕</button></li>').join('');document.getElementById('note').value=state.note||'';document.getElementById('planDate').value=state.date||defaultDate}
+function escapeHtml(t){return t.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function addItem(){state.items.push({text:"",done:false});render();const i=document.querySelectorAll('.item .text');i[i.length-1].focus()}
+function removeItem(i){state.items.splice(i,1);render()}
+function toggleDone(i){state.items[i].done=!state.items[i].done;render()}
+function updateText(i,v){state.items[i].text=v}
+document.getElementById('note').addEventListener('input',function(){state.note=this.value});
+document.getElementById('planDate').addEventListener('change',function(){state.date=this.value});
+async function savePlan(){state.date=document.getElementById('planDate').value||defaultDate;state.note=document.getElementById('note').value;try{const r=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(state)});await r.json();showStatus('✅ 已保存！明早播报时会带上','success');loadHistory()}catch(e){showStatus('❌ 保存失败: '+e.message,'error')}}
+function clearPlan(){if(!confirm('确定清空？'))return;state={items:[],note:"",date:defaultDate};render()}
+function showStatus(m,t){const e=document.getElementById('status');e.textContent=m;e.className='status '+t;setTimeout(()=>e.style.display='none',4000)}
+async function loadPlan(){try{const r=await fetch('/api/plan');state=await r.json();if(!state.items)state.items=[];render()}catch(e){}}
+async function loadHistory(){try{const r=await fetch('/api/history');const h=await r.json();const el=document.getElementById('history');if(h.length===0){el.innerHTML='<p style="color:#8b949e;font-size:.9rem">暂无历史记录</p>';return}
+el.innerHTML=h.slice().reverse().slice(0,10).map(function(hh){var its=(hh.items||[]).filter(function(i){return i.text}).map(function(i){return(i.done?'&#9989;':'&#11093;')+' '+i.text}).join('<br>');return'<div class="history-item"><div class="history-date">&#128197; '+(hh.plan_date||hh.date||'')+'</div><div class="history-items">'+(its||'(empty)')+'</div></div>'}).join('')}catch(e){}}
+loadPlan();loadHistory();
+</script>
+</body>
+</html>
