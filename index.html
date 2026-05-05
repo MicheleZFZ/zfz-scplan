@@ -5,81 +5,361 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>科研计划板</title>
 <style>
+  :root {
+    --bg: #0a0e14;
+    --surface: #131920;
+    --surface2: #1a2332;
+    --border: #253040;
+    --border-active: #4f9eff;
+    --text: #e8edf5;
+    --text2: #8892a4;
+    --accent: #4f9eff;
+    --accent2: #79b8ff;
+    --green: #34d399;
+    --green-bg: rgba(52,211,153,0.08);
+    --orange: #fbbf24;
+    --orange-bg: rgba(251,191,36,0.08);
+    --red: #f87171;
+    --red-bg: rgba(248,113,113,0.08);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;padding:2rem}
-  .container{max-width:720px;margin:0 auto}
-  h1{font-size:1.6rem;color:#58a6ff;margin-bottom:0.3rem}
-  .subtitle{color:#8b949e;font-size:0.9rem;margin-bottom:2rem}
-  .card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:1.5rem;margin-bottom:1.5rem}
-  .card h2{font-size:1.1rem;margin-bottom:1rem;color:#f0f6fc}
-  .date-input{background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;padding:.5rem .8rem;font-size:.95rem;width:100%}
-  .date-input:focus{outline:none;border-color:#58a6ff}
-  .items{list-style:none;margin-bottom:1rem}
-  .item{display:flex;align-items:flex-start;gap:.6rem;padding:.6rem 0;border-bottom:1px solid #21262d}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+  /* ─── Header ─── */
+  .header{background:linear-gradient(135deg,#0d1b2a 0%,#1a2332 50%,#0d1b2a 100%);border-bottom:1px solid var(--border);padding:2rem 1.5rem 1.2rem;text-align:center}
+  .header h1{font-size:1.5rem;font-weight:700;letter-spacing:1px}
+  .header h1 span{color:var(--accent)}
+  .header .subtitle{color:var(--text2);font-size:.85rem;margin-top:.4rem}
+
+  /* ─── Tabs ─── */
+  .tabs{display:flex;gap:0;background:var(--surface);border-bottom:1px solid var(--border);padding:0 1rem;justify-content:center;position:sticky;top:0;z-index:10}
+  .tab{padding:.85rem 1.5rem;font-size:.9rem;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;user-select:none}
+  .tab:hover{color:var(--text)}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+
+  /* ─── Container ─── */
+  .container{max-width:780px;margin:0 auto;padding:1.5rem 1rem}
+  .tab-content{display:none}
+  .tab-content.active{display:block;animation:fadeIn .25s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ─── Cards ─── */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.2rem}
+  .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem}
+  .card-title{font-size:1rem;font-weight:600;display:flex;align-items:center;gap:.5rem}
+  .card-title .badge{font-size:.7rem;background:var(--accent);color:#fff;border-radius:10px;padding:.1rem .5rem;font-weight:500}
+
+  /* ─── Date Input ─── */
+  .date-row{display:flex;gap:.6rem;margin-bottom:1.2rem;align-items:center}
+  .date-row label{font-size:.85rem;color:var(--text2);flex-shrink:0}
+  .date-input{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:.45rem .7rem;font-size:.85rem;font-family:inherit}
+  .date-input:focus{outline:none;border-color:var(--accent)}
+
+  /* ─── Items List ─── */
+  .items{list-style:none}
+  .item{display:flex;align-items:center;gap:.7rem;padding:.55rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
   .item:last-child{border-bottom:none}
-  .item input[type=checkbox]{margin-top:.25rem;accent-color:#58a6ff;flex-shrink:0;width:16px;height:16px;cursor:pointer}
-  .item .text{flex:1;background:transparent;border:none;color:#e6edf3;font-size:.95rem;padding:.2rem 0;font-family:inherit}
-  .item .text:focus{outline:none;border-bottom:1px solid #58a6ff}
-  .item .text.done{text-decoration:line-through;color:#484f58}
-  .add-btn{background:#21262d;border:1px dashed #30363d;border-radius:6px;color:#8b949e;padding:.6rem;width:100%;cursor:pointer;font-size:.9rem}
-  .add-btn:hover{border-color:#58a6ff;color:#58a6ff}
-  .actions{display:flex;gap:.8rem;margin:1.5rem 0}
-  .btn{flex:1;padding:.7rem 1.2rem;border:none;border-radius:6px;font-size:.95rem;cursor:pointer}
-  .btn-primary{background:#238636;color:#fff}
-  .btn-primary:hover{background:#2ea043}
-  .btn-secondary{background:#21262d;color:#e6edf3;border:1px solid #30363d}
-  .btn-secondary:hover{background:#30363d}
-  .note{width:100%;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;padding:.8rem;font-size:.9rem;resize:vertical;min-height:80px;font-family:inherit;margin-top:1rem}
-  .note:focus{outline:none;border-color:#58a6ff}
-  .history{margin-top:2rem}
-  .history-item{background:#161b22;border:1px solid #30363d;border-radius:6px;padding:.8rem 1rem;margin-bottom:.5rem}
-  .history-date{color:#8b949e;font-size:.8rem}
-  .history-items{color:#e6edf3;font-size:.9rem;margin-top:.3rem}
-  .status{margin-top:.8rem;padding:.5rem;border-radius:6px;display:none;font-size:.9rem}
-  .status.success{display:block;background:#0d2818;color:#3fb950;border:1px solid #238636}
-  .status.error{display:block;background:#290b0b;color:#f85149;border:1px solid #da3633}
-  .delete-btn{background:none;border:none;color:#f85149;cursor:pointer;font-size:1rem;padding:0 .2rem;flex-shrink:0}
-  .delete-btn:hover{color:#ff6b63}
+  .item input[type=checkbox]{appearance:none;-webkit-appearance:none;width:18px;height:18px;border:2px solid var(--border);border-radius:4px;cursor:pointer;flex-shrink:0;position:relative;transition:all .2s}
+  .item input[type=checkbox]:checked{background:var(--accent);border-color:var(--accent)}
+  .item input[type=checkbox]:checked::after{content:'✓';color:#fff;font-size:12px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-weight:700}
+  .item input[type=checkbox]:hover{border-color:var(--accent)}
+  .item .text{flex:1;background:transparent;border:none;color:var(--text);font-size:.9rem;padding:.2rem 0;font-family:inherit;min-width:0}
+  .item .text:focus{outline:none;border-bottom:1px solid var(--accent)}
+  .item .text.done{text-decoration:line-through;color:#3a4458}
+  .item .priority-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+  .item .priority-dot.p1{background:var(--red)}
+  .item .priority-dot.p2{background:var(--orange)}
+  .item .priority-dot.p3{background:var(--green)}
+  .delete-btn{background:none;border:none;color:#5a6478;cursor:pointer;font-size:1rem;padding:0 .2rem;flex-shrink:0;opacity:0;transition:opacity .2s}
+  .item:hover .delete-btn{opacity:1}
+  .delete-btn:hover{color:var(--red)}
+
+  .add-btn{display:flex;align-items:center;justify-content:center;gap:.4rem;background:transparent;border:1px dashed var(--border);border-radius:var(--radius-sm);color:var(--text2);padding:.55rem;width:100%;cursor:pointer;font-size:.85rem;font-family:inherit;margin-top:.5rem;transition:all .2s}
+  .add-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,158,255,.04)}
+
+  /* ─── Note ─── */
+  .note{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:.7rem;font-size:.85rem;resize:vertical;min-height:70px;font-family:inherit;margin-top:.8rem;transition:border .2s}
+  .note:focus{outline:none;border-color:var(--accent)}
+  .note::placeholder{color:#3a4458}
+
+  /* ─── Actions ─── */
+  .actions{display:flex;gap:.7rem;margin-top:1.2rem}
+  .btn{flex:1;padding:.6rem 1rem;border:none;border-radius:var(--radius-sm);font-size:.88rem;cursor:pointer;font-weight:500;transition:all .2s;font-family:inherit}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:#3a8af0;box-shadow:0 4px 15px rgba(79,158,255,.25)}
+  .btn-secondary{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+  .btn-secondary:hover{background:var(--border);color:var(--text)}
+
+  /* ─── Status ─── */
+  .status{margin-top:.8rem;padding:.5rem .8rem;border-radius:var(--radius-sm);display:none;font-size:.85rem;animation:fadeIn .2s}
+  .status.success{display:block;background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,.2)}
+  .status.error{display:block;background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+
+  /* ─── Progress Bar ─── */
+  .progress-bar{height:4px;background:var(--bg);border-radius:2px;overflow:hidden;margin:.8rem 0}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width .5s ease}
+  .progress-text{font-size:.8rem;color:var(--text2);margin-top:.3rem}
+
+  /* ─── Quarterly Sections (Yearly) ─── */
+  .quarter{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.8rem 1rem;margin-bottom:.6rem;transition:border .2s}
+  .quarter:hover{border-color:var(--border-active)}
+  .quarter-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+  .quarter-name{font-size:.85rem;font-weight:600;color:var(--accent)}
+  .quarter-count{font-size:.75rem;color:var(--text2);background:var(--surface);padding:.15rem .45rem;border-radius:8px}
+  .quarter-items{list-style:none}
+  .quarter-items .item{padding:.4rem 0}
+  .quarter-items .item .text{font-size:.83rem}
+
+  /* ─── Monthly Goals ─── */
+  .goal-tag{font-size:.7rem;padding:.15rem .45rem;border-radius:8px;flex-shrink:0;font-weight:500}
+  .goal-tag.paper{background:rgba(79,158,255,.12);color:var(--accent)}
+  .goal-tag.exp{background:var(--green-bg);color:var(--green)}
+  .goal-tag.write{background:var(--orange-bg);color:var(--orange)}
+  .goal-tag.other{background:rgba(136,146,164,.12);color:var(--text2)}
+
+  /* ─── History ─── */
+  .history{margin-top:1.5rem}
+  .history-title{font-size:.9rem;color:var(--text2);margin-bottom:.8rem;display:flex;align-items:center;gap:.5rem}
+  .history-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.65rem .9rem;margin-bottom:.4rem;transition:border .15s}
+  .history-item:hover{border-color:var(--border-active)}
+  .history-date{color:var(--text2);font-size:.78rem}
+  .history-items{color:var(--text);font-size:.83rem;margin-top:.2rem}
+  .history-items .h-done{color:var(--green)}
+  .history-items .h-pending{color:var(--text2)}
+
+  /* ─── Responsive ─── */
+  @media(max-width:480px){
+    .header{padding:1.2rem 1rem}
+    .header h1{font-size:1.2rem}
+    .tabs{overflow-x:auto;justify-content:flex-start;gap:0}
+    .tab{padding:.7rem 1rem;font-size:.82rem}
+    .container{padding:1rem}
+    .card{padding:1rem}
+    .actions{flex-direction:column}
+    .date-row{flex-wrap:wrap}
+  }
 </style>
 </head>
 <body>
+
+<div class="header">
+  <h1>🔬 科研<span>计划板</span></h1>
+  <p class="subtitle">计划 · 追踪 · 复盘 — 你的科研指挥中心</p>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" onclick="switchTab('daily')">📅 明日计划</div>
+  <div class="tab" onclick="switchTab('monthly')">📆 本月计划</div>
+  <div class="tab" onclick="switchTab('yearly')">📊 本年计划</div>
+</div>
+
 <div class="container">
-  <h1>📋 科研计划板</h1>
-  <p class="subtitle">写下明天的计划，文献日报会自动播报</p>
+
+<!-- ═══ Daily Tab ═══ -->
+<div class="tab-content active" id="tab-daily">
   <div class="card">
-    <h2>📅 明日计划</h2>
-    <input type="date" id="planDate" class="date-input">
+    <div class="card-header">
+      <div class="card-title">📅 明日计划 <span class="badge">每日</span></div>
+    </div>
+    <div class="date-row">
+      <label>📌 日期</label>
+      <input type="date" id="planDate" class="date-input">
+    </div>
     <ul class="items" id="items"></ul>
-    <button class="add-btn" onclick="addItem()">+ 添加任务</button>
-    <textarea class="note" id="note" placeholder="备注 / 额外说明..."></textarea>
+    <button class="add-btn" onclick="addItem('daily')">＋ 添加任务</button>
+    <textarea class="note" id="note" placeholder="💬 备注 · 额外说明 · 注意事项 …"></textarea>
     <div class="actions">
       <button class="btn btn-primary" onclick="savePlan()">💾 保存计划</button>
       <button class="btn btn-secondary" onclick="clearPlan()">🗑️ 清空</button>
     </div>
-    <div class="status" id="status"></div>
+    <div class="status" id="dailyStatus"></div>
   </div>
+
   <div class="card history" id="historySection">
-    <h2>📜 历史计划</h2>
+    <div class="history-title">📜 历史计划</div>
     <div id="history"></div>
   </div>
 </div>
+
+<!-- ═══ Monthly Tab ═══ -->
+<div class="tab-content" id="tab-monthly">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📆 本月目标 <span class="badge" id="monthLabel">2026-05</span></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="monthProgress" style="width:0%"></div></div>
+    <div class="progress-text" id="monthProgressText">0 / 0 已完成</div>
+    <ul class="items" id="monthItems"></ul>
+    <button class="add-btn" onclick="addItem('monthly')">＋ 添加本月目标</button>
+    <div class="actions" style="margin-top:1rem">
+      <button class="btn btn-primary" onclick="saveMonthlyPlan()">💾 保存本月计划</button>
+      <button class="btn btn-secondary" onclick="clearMonthlyPlan()">🗑️ 清空</button>
+    </div>
+    <div class="status" id="monthlyStatus"></div>
+  </div>
+</div>
+
+<!-- ═══ Yearly Tab ═══ -->
+<div class="tab-content" id="tab-yearly">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📊 年度里程碑 <span class="badge" id="yearLabel">2026</span></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="yearProgress" style="width:0%"></div></div>
+    <div class="progress-text" id="yearProgressText">0 / 0 已完成</div>
+    <div id="yearQuarters"></div>
+    <button class="add-btn" onclick="addYearlyItem()">＋ 添加年度目标</button>
+    <div class="actions" style="margin-top:1rem">
+      <button class="btn btn-primary" onclick="saveYearlyPlan()">💾 保存年度计划</button>
+      <button class="btn btn-secondary" onclick="clearYearlyPlan()">🗑️ 清空</button>
+    </div>
+    <div class="status" id="yearlyStatus"></div>
+  </div>
+</div>
+
+</div>
+
 <script>
-let state={items:[],note:"",date:""};const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);const defaultDate=tomorrow.toISOString().split('T')[0];
-function render(){const list=document.getElementById('items');list.innerHTML=state.items.map((item,i)=>'<li class="item"><input type="checkbox" '+(item.done?'checked':'')+' onchange="toggleDone('+i+')"><input class="text '+(item.done?'done':'')+'" value="'+escapeHtml(item.text)+'" oninput="updateText('+i+',this.value)" placeholder="写一条任务..."><button class="delete-btn" onclick="removeItem('+i+')">✕</button></li>').join('');document.getElementById('note').value=state.note||'';document.getElementById('planDate').value=state.date||defaultDate}
-function escapeHtml(t){return t.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function addItem(){state.items.push({text:"",done:false});render();const i=document.querySelectorAll('.item .text');i[i.length-1].focus()}
-function removeItem(i){state.items.splice(i,1);render()}
-function toggleDone(i){state.items[i].done=!state.items[i].done;render()}
-function updateText(i,v){state.items[i].text=v}
-document.getElementById('note').addEventListener('input',function(){state.note=this.value});
-document.getElementById('planDate').addEventListener('change',function(){state.date=this.value});
-async function savePlan(){state.date=document.getElementById('planDate').value||defaultDate;state.note=document.getElementById('note').value;try{const r=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(state)});await r.json();showStatus('✅ 已保存！明早播报时会带上','success');loadHistory()}catch(e){showStatus('❌ 保存失败: '+e.message,'error')}}
-function clearPlan(){if(!confirm('确定清空？'))return;state={items:[],note:"",date:defaultDate};render()}
-function showStatus(m,t){const e=document.getElementById('status');e.textContent=m;e.className='status '+t;setTimeout(()=>e.style.display='none',4000)}
-async function loadPlan(){try{const r=await fetch('/api/plan');state=await r.json();if(!state.items)state.items=[];render()}catch(e){}}
-async function loadHistory(){try{const r=await fetch('/api/history');const h=await r.json();const el=document.getElementById('history');if(h.length===0){el.innerHTML='<p style="color:#8b949e;font-size:.9rem">暂无历史记录</p>';return}
-el.innerHTML=h.slice().reverse().slice(0,10).map(function(hh){var its=(hh.items||[]).filter(function(i){return i.text}).map(function(i){return(i.done?'&#9989;':'&#11093;')+' '+i.text}).join('<br>');return'<div class="history-item"><div class="history-date">&#128197; '+(hh.plan_date||hh.date||'')+'</div><div class="history-items">'+(its||'(empty)')+'</div></div>'}).join('')}catch(e){}}
-loadPlan();loadHistory();
+/* ─── State ─── */
+const D = {items:[],note:"",date:"",monthly:[],yearly:[]};
+const defaultDate = (d=>{d.setDate(d.getDate()+1);return d.toISOString().split('T')[0]})(new Date());
+
+/* ─── Tab Switching ─── */
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`.tab:nth-child(${['daily','monthly','yearly'].indexOf(name)+1})`).classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='monthly')loadMonthlyPlan();
+  if(name==='yearly')loadYearlyPlan();
+}
+
+/* ─── Helpers ─── */
+function escapeHtml(t){return String(t).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function showStatus(id,m,type){const e=document.getElementById(id);e.textContent=m;e.className='status '+type;setTimeout(()=>{e.className='status'},4000)}
+
+/* ─── Daily Items ─── */
+function renderDaily(){
+  const list=document.getElementById('items');
+  list.innerHTML=D.items.map((item,i)=>'<li class="item"><input type="checkbox" '+(item.done?'checked':'')+' onchange="toggleDone('+i+')"><input class="text '+(item.done?'done':'')+'" value="'+escapeHtml(item.text)+'" oninput="updateText('+i+',this.value)" placeholder="写一条任务…"><button class="delete-btn" onclick="removeItem('+i+')">✕</button></li>').join('');
+  document.getElementById('note').value=D.note||'';
+  document.getElementById('planDate').value=D.date||defaultDate;
+}
+function addItem(){D.items.push({text:'',done:false});renderDaily();const els=document.querySelectorAll('#items .item .text');els[els.length-1].focus()}
+function removeItem(i){D.items.splice(i,1);renderDaily()}
+function toggleDone(i){D.items[i].done=!D.items[i].done;renderDaily()}
+function updateText(i,v){D.items[i].text=v}
+document.getElementById('note').addEventListener('input',function(){D.note=this.value});
+document.getElementById('planDate').addEventListener('change',function(){D.date=this.value});
+
+async function savePlan(){
+  D.date=document.getElementById('planDate').value||defaultDate;
+  D.note=document.getElementById('note').value;
+  try{const r=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:D.date,items:D.items,note:D.note})});await r.json();showStatus('dailyStatus','✅ 已保存！明早播报时会带上','success');loadHistory()}catch(e){showStatus('dailyStatus','❌ 保存失败: '+e.message,'error')}
+}
+function clearPlan(){if(!confirm('确定清空明日计划？'))return;D={items:[],note:'',date:defaultDate,monthly:D.monthly,yearly:D.yearly};renderDaily()}
+
+async function loadPlan(){
+  try{const r=await fetch('/api/plan');const data=await r.json();D.items=data.items||[];D.note=data.note||'';D.date=data.date||defaultDate;renderDaily()}catch(e){}
+}
+
+/* ─── Monthly Items ─── */
+function renderMonthly(){
+  const list=document.getElementById('monthItems');
+  const done=D.monthly.filter(i=>i.done).length;
+  const total=D.monthly.length;
+  list.innerHTML=D.monthly.map((item,i)=>'<li class="item"><input type="checkbox" '+(item.done?'checked':'')+' onchange="toggleMonthlyDone('+i+')"><span class="goal-tag '+(item.tag||'other')+'">'+(item.tag==='paper'?'📄论文':item.tag==='exp'?'🧪实验':item.tag==='write'?'✍️写作':'📌其他')+'</span><input class="text '+(item.done?'done':'')+'" value="'+escapeHtml(item.text)+'" oninput="updateMonthlyText('+i+',this.value)" placeholder="写一条本月目标…"><button class="delete-btn" onclick="removeMonthlyItem('+i+')">✕</button></li>').join('');
+  document.getElementById('monthLabel').textContent=(new Date().getFullYear())+'-'+String(new Date().getMonth()+1).padStart(2,'0');
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('monthProgress').style.width=pct+'%';
+  document.getElementById('monthProgressText').textContent=done+' / '+total+' 已完成';
+}
+function addItem(type){
+  if(type==='monthly'){D.monthly.push({text:'',done:false,tag:'other'});renderMonthly();const els=document.querySelectorAll('#monthItems .item .text');els[els.length-1].focus()}
+}
+function toggleMonthlyDone(i){D.monthly[i].done=!D.monthly[i].done;renderMonthly()}
+function removeMonthlyItem(i){D.monthly.splice(i,1);renderMonthly()}
+function updateMonthlyText(i,v){D.monthly[i].text=v}
+
+async function saveMonthlyPlan(){
+  try{const r=await fetch('/api/monthly-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:D.monthly})});await r.json();showStatus('monthlyStatus','✅ 本月计划已保存','success')}catch(e){showStatus('monthlyStatus','❌ 保存失败: '+e.message,'error')}
+}
+function clearMonthlyPlan(){if(!confirm('确定清空本月计划？'))return;D.monthly=[];renderMonthly()}
+async function loadMonthlyPlan(){
+  try{const r=await fetch('/api/monthly-plan');const data=await r.json();D.monthly=data.items||[];renderMonthly()}catch(e){}
+}
+
+/* ─── Yearly Items ─── */
+function yearQuarter(q){return {1:'Q1 · 1–3月',2:'Q2 · 4–6月',3:'Q3 · 7–9月',4:'Q4 · 10–12月'}[q]||'Q'+q}
+
+function renderYearly(){
+  const container=document.getElementById('yearQuarters');
+  const all=D.yearly;
+  const total=all.length;
+  const done=all.filter(i=>i.done).length;
+  const pct=total?Math.round(done/total*100):0;
+
+  document.getElementById('yearLabel').textContent=new Date().getFullYear();
+  document.getElementById('yearProgress').style.width=pct+'%';
+  document.getElementById('yearProgressText').textContent=done+' / '+total+' 已完成';
+
+  let html='';
+  for(let q=1;q<=4;q++){
+    const items=all.filter(i=>(i.quarter||1)===q);
+    if(!items.length)continue;
+    const qDone=items.filter(i=>i.done).length;
+    html+='<div class="quarter"><div class="quarter-header"><span class="quarter-name">'+yearQuarter(q)+'</span><span class="quarter-count">'+qDone+'/'+items.length+'</span></div><ul class="quarter-items">';
+    items.forEach((item,i)=>{
+      const idx=all.indexOf(item);
+      html+='<li class="item"><input type="checkbox" '+(item.done?'checked':'')+' onchange="toggleYearlyDone('+idx+')"><input class="text '+(item.done?'done':'')+'" value="'+escapeHtml(item.text)+'" oninput="updateYearlyText('+idx+',this.value)" placeholder="年度目标…"><button class="delete-btn" onclick="removeYearlyItem('+idx+')">✕</button></li>';
+    });
+    html+='</ul></div>';
+  }
+  container.innerHTML=html||'<p style="color:var(--text2);font-size:.85rem;text-align:center;padding:1rem">还没有年度目标，点下方按钮添加</p>';
+}
+function addYearlyItem(){
+  D.yearly.push({text:'',done:false,quarter:Math.ceil((new Date().getMonth()+1)/3)});
+  renderYearly();
+  const inputs=document.querySelectorAll('#yearQuarters .item .text');
+  inputs[inputs.length-1].focus();
+}
+function toggleYearlyDone(i){D.yearly[i].done=!D.yearly[i].done;renderYearly()}
+function removeYearlyItem(i){D.yearly.splice(i,1);renderYearly()}
+function updateYearlyText(i,v){D.yearly[i].text=v}
+
+async function saveYearlyPlan(){
+  try{const r=await fetch('/api/yearly-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:D.yearly})});await r.json();showStatus('yearlyStatus','✅ 年度计划已保存','success')}catch(e){showStatus('yearlyStatus','❌ 保存失败: '+e.message,'error')}
+}
+function clearYearlyPlan(){if(!confirm('确定清空年度计划？'))return;D.yearly=[];renderYearly()}
+async function loadYearlyPlan(){
+  try{const r=await fetch('/api/yearly-plan');const data=await r.json();D.yearly=data.items||[];renderYearly()}catch(e){}
+}
+
+/* ─── History ─── */
+async function loadHistory(){
+  try{const r=await fetch('/api/history');const h=await r.json();const el=document.getElementById('history');
+    if(!h||h.length===0){el.innerHTML='<p style="color:var(--text2);font-size:.85rem;text-align:center;padding:.5rem">暂无历史记录</p>';return}
+    el.innerHTML=h.slice().reverse().slice(0,10).map(hh=>{
+      const its=(hh.items||[]).filter(i=>i.text).map(i=>'<span class="'+(i.done?'h-done':'h-pending')+'">'+(i.done?'✅ ':'⬜ ')+escapeHtml(i.text)+'</span>').join('<br>');
+      return '<div class="history-item"><div class="history-date">📅 '+(hh.plan_date||hh.date||'')+'</div><div class="history-items">'+(its||'<span style="color:var(--text2)">(empty)</span>')+'</div></div>'
+    }).join('')
+  }catch(e){}
+}
+
+/* ─── Init ─── */
+loadPlan();
+loadHistory();
+
+/* ─── Tab from URL hash ─── */
+(function(){
+  const hash=location.hash.replace('#','');
+  if(['daily','monthly','yearly'].includes(hash))switchTab(hash);
+})();
 </script>
 </body>
 </html>
